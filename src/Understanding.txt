@@ -1,0 +1,1 @@
+Words --> Split into TOKENS --> Converted into Embeddings
