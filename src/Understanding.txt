@@ -1,1 +1,28 @@
-Words --> Split into TOKENS --> Converted into Embeddings
+Steps
+
+##Embeddings
+
+Start with creating a context dictionary.
+The words are then broken to tokens (Byte pair encoding)
+The tokens are then given IDs.
+Special token endings are added (Think <|UNK|>)
+Use sliding window approach on tokenized data and generate input-target pairs for LLM training.
+Embeddings of n dimensions are created for the tokens.
+Since the transformer can't see the position of the input we add the positions to the embeddings and get a positional embeddings.
+
+## Multi headed Self Attention
+
+Each vector -> Query, Key and Value.
+(Explaining how simple self attention works).
+** Embedding vectors are created with the tokens.
+** Attention weights are calculated based on dot products.
+** The weights are then normalized using softmax.
+** The weights are then multiplied with the embeddings to get a context vector.
+
+(Explaining how trainable self attention works).
+Each vector has a trainable Query, Key and Value
+** For every word the query (specific to the word) is multiplied by the key of all other words
+** The dropout mask is applied to the matrix to avoid overfitting
+** This gives the attention weights, which is then normalized using softmax
+** Context vector is calculated.
+** This process is done in parallel for n heads, and this makes it a multi headed self attention mechanism.
