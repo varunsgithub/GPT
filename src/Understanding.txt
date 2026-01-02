@@ -26,3 +26,9 @@ Each vector has a trainable Query, Key and Value
 ** This gives the attention weights, which is then normalized using softmax
 ** Context vector is calculated.
 ** This process is done in parallel for n heads, and this makes it a multi headed self attention mechanism.
+
+## GPT-2
+
+** Vanishing gradients problem
+** Layer Normalization
+** Breakdown of total param
