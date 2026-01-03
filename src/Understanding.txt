@@ -31,4 +31,30 @@ Each vector has a trainable Query, Key and Value
 
 ** Vanishing gradients problem
 ** Layer Normalization
-** Breakdown of total param
+** Breakdown of total parameters
+        Vocab size = 50257
+        Emb dimensions = 768
+        Transformer blocks = 12
+        Feed forward expansion = 4x
+        Output layer not weight tied
+        Context Length = 1024
+
+        ##Token embeddings and input dictionary
+        Token Emb: 50257 * 768 = 38.59 Mil
+        Positional Emb: 1024 * 768 = 0.8 Mil
+
+        ###Transformer blocks
+        ##Multi Headed self attention mechanism (A)
+        Q,K,V projections: 768 * 768 * 3 = 1.7 Mil
+        Output projection: 768 * 768 = 0.6 Mil
+
+        ##Feed forward network (B)
+        Linear Layer (x2): 4 * 768 * 768 * 2 = 4.7 Mil
+        Layer Norm: 2 * (768 + 768) = 0.003 Mil
+        For 12 transformer blocks.
+        Total (Transformer Block) (A + B): (2.3 + 4.7) * 12 = ~ 85 Mil
+
+        ##Output layer dictionary
+        Token Emb: 50257 * 768 = 38.59 Mil
+
+        Total = 38.5 + 85 + 38.5 = 162 Mil
