@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import tiktoken
 
 class LayerNorm(nn.Module):
     def __init__(self, emb_dim):
@@ -154,3 +155,115 @@ class GPTModel(nn.Module):
         x = self.final_norm(x)
         logits = self.out_head(x)
         return logits
+
+GPT_CONFIG_124M = {
+    "vocab_size": 50257,      # GPT-2 vocabulary size
+    "context_length": 1024,   # Maximum sequence length
+    "emb_dim": 768,           # Embedding dimension
+    "n_heads": 12,            # Number of attention heads
+    "n_layers": 12,           # Number of transformer blocks
+    "drop_rate": 0.1,         # Dropout rate
+    "qkv_bias": True         
+}
+
+def generate(model, idx, max_new_tokens, context_size,
+             temperature=0.0, top_k=None, eos_id=None):
+    for _ in range(max_new_tokens):
+        idx_cond = idx[:, -context_size:]
+        with torch.no_grad():
+            logits = model(idx_cond)
+        logits = logits[:, -1, :]
+        if top_k is not None:
+            top_logits, _ = torch.topk(logits, top_k)
+            min_val = top_logits[:, -1]
+            logits = torch.where(
+                logits < min_val,
+                torch.tensor(float('-inf')).to(logits.device),
+                logits
+            )
+        if temperature > 0.0:
+            logits = logits / temperature
+            probs = torch.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
+        else:    #4
+            idx_next = torch.argmax(logits, dim=-1, keepdim=True)
+        if idx_next == eos_id:
+            break
+        idx = torch.cat((idx, idx_next), dim=1)
+    return idx
+
+
+def text_to_token_ids(text, tokenizer):
+    """Encode text string to token IDs tensor."""
+    encoded = tokenizer.encode(text)
+    encoded_tensor = torch.tensor(encoded).unsqueeze(0)
+    return encoded_tensor
+
+
+def token_ids_to_text(token_ids, tokenizer):
+    """Decode token IDs tensor to text string."""
+    flat = token_ids.squeeze(0)
+    return tokenizer.decode(flat.tolist())
+
+
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("GPT Text Generator")
+    print("=" * 60)
+    print("\nInitializing model with random weights...")
+    print("(Note: Output will be random since model is not trained)\n")
+    
+    # Set device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+    
+    # Initialize model
+    torch.manual_seed(123)
+    model = GPTModel(GPT_CONFIG_124M)
+    model.to(device)
+    model.eval()
+    
+    # Get tokenizer
+    tokenizer = tiktoken.get_encoding("gpt2")
+    
+    total_params = sum(p.numel() for p in model.parameters())
+    print(f"Model parameters: {total_params:,}")
+    print("\n" + "=" * 60)
+    print("Enter text to generate 10 tokens. Type 'quit' to exit.")
+    print("=" * 60 + "\n")
+    
+    while True:
+        try:
+            user_input = input("You: ").strip()
+            
+            if user_input.lower() in ['quit', 'exit', 'q']:
+                print("\nGoodbye!")
+                break
+            
+            if not user_input:
+                print("Please enter some text.\n")
+                continue
+            
+            # Tokenize input
+            input_ids = text_to_token_ids(user_input, tokenizer).to(device)
+            
+            # Generate 10 new tokens
+            output_ids = generate(
+                model=model,
+                idx=input_ids,
+                max_new_tokens=10,
+                context_size=GPT_CONFIG_124M["context_length"],
+                top_k=20,
+                temperature=1.5
+            )
+            
+            # Decode and print
+            output_text = token_ids_to_text(output_ids, tokenizer)
+            print(f"GPT: {output_text}\n")
+            
+        except KeyboardInterrupt:
+            print("\n\nGoodbye!")
+            break
+        except Exception as e:
+            print(f"Error: {e}\n")

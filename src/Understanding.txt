@@ -58,3 +58,13 @@ Each vector has a trainable Query, Key and Value
         Token Emb: 50257 * 768 = 38.59 Mil
 
         Total = 38.5 + 85 + 38.5 = 162 Mil
+
+** Transformer architecture
+** Final layer -> Layer normalized -> Logits -> softmax -> probabilities converted to Vocab
+
+## Training:
+
+** Cross Entropy
+** Perplexity
+** Trained on War and Peace and the Alpaca_GPT_4 answers
+** Text Generation  =   Temperature scaling (Creativity) + Multimonial (randomness) + Top K
