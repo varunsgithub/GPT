@@ -28,7 +28,6 @@ python3 gpt.py
 ============================================================
 GPT Text Generator
 ============================================================
-Enter text to generate 20 tokens. Type 'quit' to exit.
 
 You: The future of artificial intelligence
 GPT: The future of artificial intelligence is not just about making machines smarter, 
