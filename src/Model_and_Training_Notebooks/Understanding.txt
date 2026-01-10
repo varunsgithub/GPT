@@ -68,3 +68,10 @@ Each vector has a trainable Query, Key and Value
 ** Perplexity
 ** Trained on War and Peace and the Alpaca_GPT_4 answers
 ** Text Generation  =   Temperature scaling (Creativity) + Multimonial (randomness) + Top K
+
+
+## Finetuning
+
+** Instruction fine tuning
+** Classification fine tuning 
+        (We are working with spam classification)

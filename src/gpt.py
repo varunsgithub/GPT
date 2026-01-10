@@ -1,6 +1,17 @@
 import torch
 import torch.nn as nn
 import tiktoken
+import gdown
+import os
+
+# The weights are the pre trained weights for GPT2 (OpenAI's version)
+WEIGHTS_URL = "https://drive.google.com/uc?id=1mXlo1tpbShmX--tC4l3ueiATnjKh1s9R"
+WEIGHTS_PATH = "my_gpt_model.pth"
+
+if not os.path.exists(WEIGHTS_PATH):
+    print("Downloading pre trained weights for LLM...")
+    gdown.download(WEIGHTS_URL, WEIGHTS_PATH, quiet=False)
+
 
 class LayerNorm(nn.Module):
     def __init__(self, emb_dim):
@@ -211,8 +222,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print("GPT Text Generator")
     print("=" * 60)
-    print("\nInitializing model with random weights...")
-    print("(Note: Output will be random since model is not trained)\n")
+    print("(Note: Output Can be random since model is based on Gpt2 weights released by OpenAI)\n")
     
     # Set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -223,15 +233,19 @@ if __name__ == "__main__":
     model = GPTModel(GPT_CONFIG_124M)
     model.to(device)
     model.eval()
-    
+
+    model.load_state_dict(torch.load(WEIGHTS_PATH, map_location=device))
+    print("Weights loaded successfully.")
     # Get tokenizer
     tokenizer = tiktoken.get_encoding("gpt2")
     
     total_params = sum(p.numel() for p in model.parameters())
     print(f"Model parameters: {total_params:,}")
     print("\n" + "=" * 60)
-    print("Enter text to generate 10 tokens. Type 'quit' to exit.")
+    print("Enter text to generate 20 tokens. Type 'quit' to exit.")
     print("=" * 60 + "\n")
+
+    
     
     while True:
         try:
@@ -252,10 +266,10 @@ if __name__ == "__main__":
             output_ids = generate(
                 model=model,
                 idx=input_ids,
-                max_new_tokens=10,
+                max_new_tokens=20,
                 context_size=GPT_CONFIG_124M["context_length"],
-                top_k=20,
-                temperature=1.5
+                top_k=40,
+                temperature=0.9
             )
             
             # Decode and print
