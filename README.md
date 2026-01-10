@@ -1,4 +1,4 @@
-# GPT-2 From Scratch
+# Generative Pre Trained Model (GPT) - 2
 
 A complete implementation of the GPT-2 (124M) language model built from scratch using PyTorch, following the transformer architecture described in ["Attention Is All You Need"](https://arxiv.org/abs/1706.03762) and OpenAI's GPT-2 paper.
 
