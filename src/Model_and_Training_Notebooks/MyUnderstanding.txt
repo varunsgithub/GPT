@@ -1,0 +1,83 @@
+Steps
+
+##Embeddings
+
+Start with creating a context dictionary.
+The words are then broken to tokens (Byte pair encoding)
+The tokens are then given IDs.
+Special token endings are added (Think <|UNK|>)
+Use sliding window approach on tokenized data and generate input-target pairs for LLM training.
+Embeddings of n dimensions are created for the tokens.
+Since the transformer can't see the position of the input we add the positions to the embeddings and get a positional embeddings.
+
+## Multi headed Self Attention
+
+Each vector -> Query, Key and Value.
+(Explaining how simple self attention works).
+** Embedding vectors are created with the tokens.
+** Attention weights are calculated based on dot products.
+** The weights are then normalized using softmax.
+** The weights are then multiplied with the embeddings to get a context vector.
+
+(Explaining how trainable self attention works).
+Each vector has a trainable Query, Key and Value
+** For every word the query (specific to the word) is multiplied by the key of all other words
+** The dropout mask is applied to the matrix to avoid overfitting
+** This gives the attention weights, which is then normalized using softmax
+** Context vector is calculated.
+** This process is done in parallel for n heads, and this makes it a multi headed self attention mechanism.
+
+## GPT-2
+
+** Vanishing gradients problem
+** Layer Normalization
+** Breakdown of total parameters
+        Vocab size = 50257
+        Emb dimensions = 768
+        Transformer blocks = 12
+        Feed forward expansion = 4x
+        Output layer not weight tied
+        Context Length = 1024
+
+        ##Token embeddings and input dictionary
+        Token Emb: 50257 * 768 = 38.59 Mil
+        Positional Emb: 1024 * 768 = 0.8 Mil
+
+        ###Transformer blocks
+        ##Multi Headed self attention mechanism (A)
+        Q,K,V projections: 768 * 768 * 3 = 1.7 Mil
+        Output projection: 768 * 768 = 0.6 Mil
+
+        ##Feed forward network (B)
+        Linear Layer (x2): 4 * 768 * 768 * 2 = 4.7 Mil
+        Layer Norm: 2 * (768 + 768) = 0.003 Mil
+        For 12 transformer blocks.
+        Total (Transformer Block) (A + B): (2.3 + 4.7) * 12 = ~ 85 Mil
+
+        ##Output layer dictionary
+        Token Emb: 50257 * 768 = 38.59 Mil
+
+        Total = 38.5 + 85 + 38.5 = 162 Mil
+
+** Transformer architecture
+** Final layer -> Layer normalized -> Logits -> softmax -> probabilities converted to Vocab
+
+## Training:
+
+** Cross Entropy
+** Perplexity
+** Trained on War and Peace and the Alpaca_GPT_4 answers
+** Text Generation  =   Temperature scaling (Creativity) + Multimonial (randomness) + Top K
+
+
+## Finetuning
+
+** Instruction fine tuning
+** Classification fine tuning 
+        (We are working with spam classification)
+** Instruction: steps:
+1. Create a clean data set
+2. Start with developing the tokenization function that collates the instruction and responses
+3. Add end of word padding to the tokenization function and use -100 for everything but last token to avoid cross entropy loss for paddings
+4. Mask the instructions to avoid overfitting (optional)
+5. We have followed the 2024 paper by Shi et al. "Instruction tuning with loss over instructions"
